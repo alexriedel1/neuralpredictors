@@ -22,6 +22,8 @@ from ..hermite import (
 from ..squeeze_excitation import SqueezeExcitationBlock
 from .base import Core
 
+import antialiased_cnns
+
 logger = logging.getLogger(__name__)
 
 
@@ -231,6 +233,9 @@ class Stacked2dCore(Core, nn.Module):
             else:
                 layer["nonlin"] = self.activation_fn(**self.activation_config)
 
+    def add_blur(self, layer, stride=2):
+        layer["blur_pool"] = antialiased_cnns.BlurPool(C, stride=stride)
+
     def add_first_layer(self):
         layer = OrderedDict()
         layer["conv"] = nn.Conv2d(
@@ -242,6 +247,7 @@ class Stacked2dCore(Core, nn.Module):
         )
         self.add_bn_layer(layer, self.hidden_channels[0])
         self.add_activation(layer)
+        self.add_blur(layer, stride=1)
         self.features.add_module("layer0", nn.Sequential(layer))
 
     def add_subsequent_layers(self):
@@ -265,6 +271,7 @@ class Stacked2dCore(Core, nn.Module):
             )
             self.add_bn_layer(layer, self.hidden_channels[l])
             self.add_activation(layer)
+            self.add_blur(layer, stride=1)
             self.features.add_module("layer{}".format(l), nn.Sequential(layer))
 
     class AttentionConvWrapper(AttentionConv):
