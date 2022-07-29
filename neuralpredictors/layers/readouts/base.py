@@ -1,5 +1,6 @@
 import warnings
-from typing import Any, Literal, Mapping, Optional
+from typing import Any, Mapping, Optional
+from typing_extensions import Literal
 
 import torch
 from torch import nn as nn
