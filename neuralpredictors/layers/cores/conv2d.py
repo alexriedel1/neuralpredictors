@@ -65,6 +65,7 @@ class Stacked2dCore(Core, nn.Module):
         linear=False,
         nonlinearity_type="AdaptiveELU",
         nonlinearity_config=None,
+        add_blur = False
     ):
         """
         Args:
@@ -132,6 +133,8 @@ class Stacked2dCore(Core, nn.Module):
         self.bias = bias
         self.independent_bn_bias = independent_bn_bias
         self.batch_norm_scale = batch_norm_scale
+
+        self.add_blur = add_blur
 
         super().__init__()
         regularizer_config = (
@@ -233,8 +236,8 @@ class Stacked2dCore(Core, nn.Module):
             else:
                 layer["nonlin"] = self.activation_fn(**self.activation_config)
 
-    def add_blur(self, layer, stride=2):
-        layer["blur_pool"] = antialiased_cnns.BlurPool(C, stride=stride)
+    def add_blur(self, layer, channels, stride=2):
+        layer["blur_pool"] = antialiased_cnns.BlurPool(channels, stride=stride)
 
     def add_first_layer(self):
         layer = OrderedDict()
@@ -247,7 +250,8 @@ class Stacked2dCore(Core, nn.Module):
         )
         self.add_bn_layer(layer, self.hidden_channels[0])
         self.add_activation(layer)
-        self.add_blur(layer, stride=1)
+        if self.add_blur:
+            self.add_blur(layer, self.hidden_channels[0], stride=1)
         self.features.add_module("layer0", nn.Sequential(layer))
 
     def add_subsequent_layers(self):
@@ -271,7 +275,8 @@ class Stacked2dCore(Core, nn.Module):
             )
             self.add_bn_layer(layer, self.hidden_channels[l])
             self.add_activation(layer)
-            self.add_blur(layer, stride=1)
+            if self.add_blur:
+                self.add_blur(layer, self.hidden_channels[l], stride=1)
             self.features.add_module("layer{}".format(l), nn.Sequential(layer))
 
     class AttentionConvWrapper(AttentionConv):
