@@ -65,7 +65,7 @@ class Stacked2dCore(Core, nn.Module):
         linear=False,
         nonlinearity_type="AdaptiveELU",
         nonlinearity_config=None,
-        add_blur = False
+        blur_pool = False
     ):
         """
         Args:
@@ -134,7 +134,7 @@ class Stacked2dCore(Core, nn.Module):
         self.independent_bn_bias = independent_bn_bias
         self.batch_norm_scale = batch_norm_scale
 
-        self.add_blur = add_blur
+        self.blur_pool = blur_pool
 
         super().__init__()
         regularizer_config = (
@@ -250,7 +250,7 @@ class Stacked2dCore(Core, nn.Module):
         )
         self.add_bn_layer(layer, self.hidden_channels[0])
         self.add_activation(layer)
-        if self.add_blur:
+        if self.blur_pool:
             self.add_blur(layer, self.hidden_channels[0], stride=1)
         self.features.add_module("layer0", nn.Sequential(layer))
 
@@ -275,7 +275,7 @@ class Stacked2dCore(Core, nn.Module):
             )
             self.add_bn_layer(layer, self.hidden_channels[l])
             self.add_activation(layer)
-            if self.add_blur:
+            if self.blur_pool:
                 self.add_blur(layer, self.hidden_channels[l], stride=1)
             self.features.add_module("layer{}".format(l), nn.Sequential(layer))
 
