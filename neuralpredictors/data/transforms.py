@@ -2,7 +2,7 @@ from collections import Iterable, namedtuple
 
 import numpy as np
 import torch
-from skimage.transform import rescale
+from skimage.transform import rescale, resize
 
 
 class Invertible:
@@ -506,9 +506,10 @@ class ScaleInputs(StaticTransform, Invertible):
     def __call__(self, x):
         key_vals = {k: v for k, v in zip(x._fields, x)}
         img = key_vals[self.in_name]
-        key_vals[self.in_name] = rescale(
+        resize_fn = resize if isinstance(self.scale, tuple) else rescale
+        key_vals[self.in_name] = resize_fn(
             img,
-            scale=self.scale,
+            self.scale,
             mode=self.mode,
             anti_aliasing=self.anti_aliasing,
             clip=self.clip,
