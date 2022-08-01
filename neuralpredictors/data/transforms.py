@@ -481,7 +481,7 @@ class SelectInputChannel(StaticTransform):
 
 class ScaleInputs(StaticTransform, Invertible):
     """
-    Applies skimage.transform.rescale to the data_key "images".
+    Applies skimage.transform.rescale or resize to the data_key "images".
     """
 
     def __init__(
