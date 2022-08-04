@@ -392,6 +392,10 @@ class FullGaussian2d(Readout):
                 return self.mu_transform(self._mu.squeeze())[self.grid_sharing_index].view(*self.grid_shape)
         else:
             return self._mu
+            
+    @mu.setter
+    def mu(self, val):
+        self._mu = val
 
     def sample_grid(self, batch_size, sample=None):
         """
